@@ -1,4 +1,4 @@
-name: Build ERPNext v16 Custom Images
+name: Build ERPNext v16 Custom Image
 on: 
   push:
     branches: [ main ]
@@ -23,31 +23,18 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
           
-      - name: Set APPS_JSON
+      - name: Create apps.json secret
         run: |
-          export APPS_JSON_BASE64=$(echo '[{"url":"https://github.com/frappe/erpnext","branch":"version-16"},{"url":"https://github.com/frappe/hrms","branch":"version-16"}]' | base64 -w 0)
-          echo "APPS_JSON_BASE64=$APPS_JSON_BASE64" >> $GITHUB_ENV
+          echo '[{"url":"https://github.com/frappe/erpnext","branch":"version-16"},{"url":"https://github.com/frappe/hrms","branch":"version-16"}]' > apps.json
           
-      - name: Build Backend Worker
+      - name: Build and Push Custom Image
         uses: docker/build-push-action@v5
         with:
           context: .
           file: images/custom/Containerfile
-          target: backend
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/erpnext-worker:v16
+          tags: ghcr.io/${{ github.repository_owner }}/erpnext-custom:v16
           build-args: |
             FRAPPE_BRANCH=version-16
-            APPS_JSON_BASE64=${{ env.APPS_JSON_BASE64 }}
-            
-      - name: Build Frontend Nginx
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: images/custom/Containerfile
-          target: frontend
-          push: true
-          tags: ghcr.io/${{ github.repository_owner }}/erpnext-nginx:v16
-          build-args: |
-            FRAPPE_BRANCH=version-16
-            APPS_JSON_BASE64=${{ env.APPS_JSON_BASE64 }}
+          secret-files: |
+            apps_json=./apps.json
