@@ -27,6 +27,10 @@ jobs:
         run: |
           echo '[{"url":"https://github.com/frappe/erpnext","branch":"version-16"},{"url":"https://github.com/frappe/hrms","branch":"version-16"},{"url":"https://github.com/frappe/offsite_backups"}]' > apps.json
 
+      - name: Patch Containerfile for HRMS Vite
+        run: |
+          sed -i 's/echo "{}" >/echo "{\"socketio_port\": 9000}" >/g' images/custom/Containerfile
+          
       - name: Build and Push Custom Image
         uses: docker/build-push-action@v7
         with:
