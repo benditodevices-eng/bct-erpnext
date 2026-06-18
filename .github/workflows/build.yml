@@ -25,37 +25,12 @@ jobs:
           
       - name: Create apps.json secret
         run: |
-          echo '[{"url":"https://github.com/frappe/erpnext","branch":"version-16"},{"url":"https://github.com/frappe/hrms","branch":"version-16"},{"url":"https://github.com/frappe/offsite_backups"},{"url":"https://github.com/zerodhatech/Frappe-attachments-s3.git","branch":"master"}]' > apps.json
+          echo '[{"url":"https://github.com/frappe/erpnext","branch":"version-16"},{"url":"https://github.com/frappe/hrms","branch":"version-16"},{"url":"https://github.com/frappe/offsite_backups"},{"url":"https://github.com/developmentforpeople/dfp_external_storage.git","branch":"version-15"}]' > apps.json
 
-      - name: Patch Containerfile for HRMS Vite and Assets
+      - name: Patch Containerfile for HRMS Vite
         run: |
           sed -i 's/echo "{}" >/echo "{\"socketio_port\": 9000}" >/g' images/custom/Containerfile
           
-          # Inject the BCT brand assets into the ERPNext image-layer assets folder
-          cat >> images/custom/Containerfile <<'EOF'
-          RUN set -eux; \
-              logo_dir="/home/frappe/frappe-bench/assets/erpnext/images/logo"; \
-              mkdir -p "$logo_dir/favicon" "$logo_dir/wordmark-logos"; \
-              curl -fsSL https://static.benditotech.com/logo/bendito-contech-favicon.svg -o "$logo_dir/bendito-contech-favicon.svg"; \
-              curl -fsSL https://static.benditotech.com/logo/bendito-contech-icon-black.svg -o "$logo_dir/bendito-contech-icon-black.svg"; \
-              curl -fsSL https://static.benditotech.com/logo/bendito-contech-icon-navy-mono.svg -o "$logo_dir/bendito-contech-icon-navy-mono.svg"; \
-              curl -fsSL https://static.benditotech.com/logo/bendito-contech-icon-white.svg -o "$logo_dir/bendito-contech-icon-white.svg"; \
-              curl -fsSL https://static.benditotech.com/logo/bendito-contech-icon.svg -o "$logo_dir/bendito-contech-icon.svg"; \
-              curl -fsSL https://static.benditotech.com/logo/favicon/favicon-16.png -o "$logo_dir/favicon/favicon-16.png"; \
-              curl -fsSL https://static.benditotech.com/logo/favicon/favicon-180.png -o "$logo_dir/favicon/favicon-180.png"; \
-              curl -fsSL https://static.benditotech.com/logo/favicon/favicon-32.png -o "$logo_dir/favicon/favicon-32.png"; \
-              curl -fsSL https://static.benditotech.com/logo/favicon/favicon-48.png -o "$logo_dir/favicon/favicon-48.png"; \
-              curl -fsSL https://static.benditotech.com/logo/favicon/favicon-512.png -o "$logo_dir/favicon/favicon-512.png"; \
-              curl -fsSL https://static.benditotech.com/logo/favicon/favicon.ico -o "$logo_dir/favicon/favicon.ico"; \
-              curl -fsSL https://static.benditotech.com/logo/wordmark-logos/bendito-contech-logo-horizontal-black.svg -o "$logo_dir/wordmark-logos/bendito-contech-logo-horizontal-black.svg"; \
-              curl -fsSL https://static.benditotech.com/logo/wordmark-logos/bendito-contech-logo-horizontal-navy-mono.svg -o "$logo_dir/wordmark-logos/bendito-contech-logo-horizontal-navy-mono.svg"; \
-              curl -fsSL https://static.benditotech.com/logo/wordmark-logos/bendito-contech-logo-horizontal-reversed.svg -o "$logo_dir/wordmark-logos/bendito-contech-logo-horizontal-reversed.svg"; \
-              curl -fsSL https://static.benditotech.com/logo/wordmark-logos/bendito-contech-logo-horizontal-white.svg -o "$logo_dir/wordmark-logos/bendito-contech-logo-horizontal-white.svg"; \
-              curl -fsSL https://static.benditotech.com/logo/wordmark-logos/bendito-contech-logo-horizontal.svg -o "$logo_dir/wordmark-logos/bendito-contech-logo-horizontal.svg"; \
-              curl -fsSL https://static.benditotech.com/logo/wordmark-logos/bendito-contech-logo-stacked-black.svg -o "$logo_dir/wordmark-logos/bendito-contech-logo-stacked-black.svg"; \
-              curl -fsSL https://static.benditotech.com/logo/wordmark-logos/bendito-contech-logo-stacked.svg -o "$logo_dir/wordmark-logos/bendito-contech-logo-stacked.svg"
-          EOF
-
       - name: Build and Push Custom Image
         uses: docker/build-push-action@v7
         with:
