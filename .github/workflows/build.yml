@@ -27,10 +27,35 @@ jobs:
         run: |
           echo '[{"url":"https://github.com/frappe/erpnext","branch":"version-16"},{"url":"https://github.com/frappe/hrms","branch":"version-16"},{"url":"https://github.com/frappe/offsite_backups"},{"url":"https://github.com/zerodhatech/Frappe-attachments-s3.git","branch":"master"}]' > apps.json
 
-      - name: Patch Containerfile for HRMS Vite
+      - name: Patch Containerfile for HRMS Vite and Assets
         run: |
           sed -i 's/echo "{}" >/echo "{\"socketio_port\": 9000}" >/g' images/custom/Containerfile
           
+          # Inject the BCT brand assets into the ERPNext public images folder
+          cat >> images/custom/Containerfile <<'EOF'
+          RUN set -eux; \
+              logo_dir="/home/frappe/frappe-bench/apps/erpnext/erpnext/public/images/logo"; \
+              mkdir -p "$logo_dir/favicon" "$logo_dir/wordmark-logos"; \
+              wget https://static.benditotech.com/logo/bendito-contech-favicon.svg -O "$logo_dir/bendito-contech-favicon.svg"; \
+              wget https://static.benditotech.com/logo/bendito-contech-icon-black.svg -O "$logo_dir/bendito-contech-icon-black.svg"; \
+              wget https://static.benditotech.com/logo/bendito-contech-icon-navy-mono.svg -O "$logo_dir/bendito-contech-icon-navy-mono.svg"; \
+              wget https://static.benditotech.com/logo/bendito-contech-icon-white.svg -O "$logo_dir/bendito-contech-icon-white.svg"; \
+              wget https://static.benditotech.com/logo/bendito-contech-icon.svg -O "$logo_dir/bendito-contech-icon.svg"; \
+              wget https://static.benditotech.com/logo/favicon/favicon-16.png -O "$logo_dir/favicon/favicon-16.png"; \
+              wget https://static.benditotech.com/logo/favicon/favicon-180.png -O "$logo_dir/favicon/favicon-180.png"; \
+              wget https://static.benditotech.com/logo/favicon/favicon-32.png -O "$logo_dir/favicon/favicon-32.png"; \
+              wget https://static.benditotech.com/logo/favicon/favicon-48.png -O "$logo_dir/favicon/favicon-48.png"; \
+              wget https://static.benditotech.com/logo/favicon/favicon-512.png -O "$logo_dir/favicon/favicon-512.png"; \
+              wget https://static.benditotech.com/logo/favicon/favicon.ico -O "$logo_dir/favicon/favicon.ico"; \
+              wget https://static.benditotech.com/logo/wordmark-logos/bendito-contech-logo-horizontal-black.svg -O "$logo_dir/wordmark-logos/bendito-contech-logo-horizontal-black.svg"; \
+              wget https://static.benditotech.com/logo/wordmark-logos/bendito-contech-logo-horizontal-navy-mono.svg -O "$logo_dir/wordmark-logos/bendito-contech-logo-horizontal-navy-mono.svg"; \
+              wget https://static.benditotech.com/logo/wordmark-logos/bendito-contech-logo-horizontal-reversed.svg -O "$logo_dir/wordmark-logos/bendito-contech-logo-horizontal-reversed.svg"; \
+              wget https://static.benditotech.com/logo/wordmark-logos/bendito-contech-logo-horizontal-white.svg -O "$logo_dir/wordmark-logos/bendito-contech-logo-horizontal-white.svg"; \
+              wget https://static.benditotech.com/logo/wordmark-logos/bendito-contech-logo-horizontal.svg -O "$logo_dir/wordmark-logos/bendito-contech-logo-horizontal.svg"; \
+              wget https://static.benditotech.com/logo/wordmark-logos/bendito-contech-logo-stacked-black.svg -O "$logo_dir/wordmark-logos/bendito-contech-logo-stacked-black.svg"; \
+              wget https://static.benditotech.com/logo/wordmark-logos/bendito-contech-logo-stacked.svg -O "$logo_dir/wordmark-logos/bendito-contech-logo-stacked.svg"
+          EOF
+
       - name: Build and Push Custom Image
         uses: docker/build-push-action@v7
         with:
